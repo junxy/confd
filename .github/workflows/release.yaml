@@ -34,7 +34,13 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go-version }}
-    - run: go version
+    - run: |
+        go version
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 \
+        go build \
+        -buildvcs=false \
+        -ldflags="-s -w -X main.GitSHA=${GIT_SHA}"
+        
     # - uses: wangyoucao577/go-release-action@v1
     #   with:
     #     github_token: ${{ secrets.GITHUB_TOKEN }}
