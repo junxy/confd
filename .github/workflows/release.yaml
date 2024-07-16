@@ -55,7 +55,7 @@ jobs:
         go build \
         -buildvcs=false \
         -ldflags="-s -w -X main.GitSHA=${GIT_SHA}" \
-        -o bin/confd-${VERSION}-$GOOS-$GOARCH$extension;
+        -o bin/confd-${VERSION}-$GOOS-$GOARCH-${{ matrix.go-version }}$extension;
 
         upx bin/confd-${VERSION}-*
         
@@ -81,7 +81,7 @@ jobs:
         path: |
           bin
 
-  consume-artifacts:
+  release-artifacts:
     runs-on: ubuntu-latest
     needs:
     # - define-matrix
