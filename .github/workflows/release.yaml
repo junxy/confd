@@ -46,6 +46,8 @@ jobs:
         export GOARCH=${{ matrix.goarch }}
         export CGO_ENABLED=0
         if [ $GOOS == windows ]; then export extension=.exe; fi;
+
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
         
         go build \
         -buildvcs=false \
@@ -76,5 +78,6 @@ jobs:
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "confd-*"
+        tag: $VERSION
         # bodyFile: "body.md"
         # token
