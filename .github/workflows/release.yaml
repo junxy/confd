@@ -36,10 +36,18 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - run: |
         go version
-        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 \
+        
+        export VERSION=`egrep -o '[0-9]+\.[0-9a-z.\-]+' version.go`
+        export GIT_SHA=`git rev-parse --short HEAD || echo`
+        export GOOS=${{ matrix.goos }}
+        export GOARCH=${{ matrix.goarch }}
+        export CGO_ENABLED=0
+        if [ $GOOS == windows ]; then export extension=.exe; fi;
+        
         go build \
         -buildvcs=false \
-        -ldflags="-s -w -X main.GitSHA=${GIT_SHA}"
+        -ldflags="-s -w -X main.GitSHA=${GIT_SHA}" \
+        -o bin/confd-${VERSION}-$GOOS-$GOARCH$extension;
         
     # - uses: wangyoucao577/go-release-action@v1
     #   with:
@@ -59,4 +67,4 @@ jobs:
         name: rel
         path: |
           bin
-          rel
+          !rel
