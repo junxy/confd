@@ -1,0 +1,107 @@
+# .github/workflows/release.yaml
+
+name: Build
+
+on:
+  #release:
+  #  types: [created]
+  push:
+    branches: [ "build" ]
+
+permissions:
+    contents: write
+    packages: write
+
+jobs:
+  go-build-matrix:
+    name: go build matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # ref: https://endoflife.date/go
+        go-version: [ '1.21', '1.22' ]
+        # build and publish in parallel: linux/386, linux/amd64, linux/arm64, windows/386, windows/amd64, darwin/amd64, darwin/arm64
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64] # -- "386", 
+        exclude:
+          # - goarch: "386"
+          #   goos: darwin
+          - goarch: arm64
+            goos: windows
+    steps:
+    - uses: actions/checkout@v4
+    - name: go build
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+    - run: |
+        go version
+
+        # ref: https://github.com/marketplace/actions/install-package
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/customizing-github-hosted-runners
+        sudo apt update
+        sudo apt install -y upx
+        
+        export VERSION=`egrep -o '[0-9]+\.[0-9a-z.\-]+' version.go`
+        export GIT_SHA=`git rev-parse --short HEAD || echo`
+        export GOOS=${{ matrix.goos }}
+        export GOARCH=${{ matrix.goarch }}
+        export CGO_ENABLED=0
+        if [ $GOOS == windows ]; then export extension=.exe; fi;
+
+        # ref: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable 
+        # echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+        
+        go build \
+        -buildvcs=false \
+        -ldflags="-s -w -X main.GitSHA=${GIT_SHA}" \
+        -o bin/confd-${VERSION}-$GOOS-$GOARCH-${{ matrix.go-version }}$extension;
+
+        upx bin/confd-${VERSION}-*
+        
+    # - uses: wangyoucao577/go-release-action@v1
+    #   with:
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
+    #     goos: ${{ matrix.goos }}
+    #     goarch: ${{ matrix.goarch }}
+    #     # goversion: "https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz"
+    #     project_path: "bin"
+    #     binary_name: "test-binary"
+    #     # extra_files: LICENSE README.md
+    #     release_asset_dir: rel
+    #     compress_assets: OFF
+
+    # ref: https://docs.github.com/en/actions/learn-github-actions/essential-features-of-github-actions
+
+    # ref: https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs !
+    - name: produce-artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: confd-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.go-version }}
+        path: |
+          bin
+
+  release-artifacts:
+    runs-on: ubuntu-latest
+    needs:
+    # - define-matrix
+    # - produce-artifacts
+    - go-build-matrix
+    # strategy:
+    #   matrix:
+    #     color: ${{ fromJSON(needs.define-matrix.outputs.colors) }}
+    steps:
+    # ref: https://github.com/actions/download-artifact
+    - name: Retrieve Artifact
+      uses: actions/download-artifact@v4
+      with:
+        path: bin
+        merge-multiple: true
+    # ref: https://github.com/ncipollo/release-action
+    # https://github.com/marketplace/actions/create-release
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "bin/*"
+        tag: dev
+        # bodyFile: "body.md"
+        # token
