@@ -5,8 +5,8 @@ name: Build
 on:
   release:
     types: [created]
-  # push:
-  #   branches: [ "master", "build" ]
+  push:
+    branches: [ "build" ]
 
 permissions:
     contents: write
@@ -28,17 +28,18 @@ jobs:
             goos: windows
     steps:
     - uses: actions/checkout@v4
-    - uses: wangyoucao577/go-release-action@v1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        goos: ${{ matrix.goos }}
-        goarch: ${{ matrix.goarch }}
-        # goversion: "https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz"
-        project_path: "bin"
-        binary_name: "test-binary"
-        # extra_files: LICENSE README.md
-        release_asset_dir: rel
-        compress_assets: OFF
+    
+    # - uses: wangyoucao577/go-release-action@v1
+    #   with:
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
+    #     goos: ${{ matrix.goos }}
+    #     goarch: ${{ matrix.goarch }}
+    #     # goversion: "https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz"
+    #     project_path: "bin"
+    #     binary_name: "test-binary"
+    #     # extra_files: LICENSE README.md
+    #     release_asset_dir: rel
+    #     compress_assets: OFF
       
     - name: artifact
       uses: actions/upload-artifact@v4
