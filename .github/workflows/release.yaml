@@ -64,7 +64,7 @@ jobs:
     - name: artifact
       uses: actions/upload-artifact@v4
       with:
-        name: rel-${{ matrix.goos }}-${{ matrix.goarch }}
+        name: rel-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.go-version }}
         path: |
           bin
           !rel
