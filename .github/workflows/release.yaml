@@ -13,8 +13,8 @@ permissions:
     packages: write
 
 jobs:
-  releases-matrix:
-    name: Release Go Binary
+  go-build-matrix:
+    name: go build matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -67,17 +67,32 @@ jobs:
     #     # extra_files: LICENSE README.md
     #     release_asset_dir: rel
     #     compress_assets: OFF
-      
-    - name: artifact
+
+    # ref: https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
+    - name: produce-artifacts
       uses: actions/upload-artifact@v4
       with:
         name: confd-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.go-version }}
         path: |
           bin
 
+  consume-artifacts:
+    runs-on: ubuntu-latest
+    needs:
+    # - define-matrix
+    # - produce-artifacts
+    - go-build-matrix
+    # strategy:
+    #   matrix:
+    #     color: ${{ fromJSON(needs.define-matrix.outputs.colors) }}
+    steps:
+    - name: Retrieve Artifact
+      uses: actions/download-artifact@v4
+      # with:
+      #   name: ${{ matrix.color }}
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "confd-*"
-        tag: $VERSION
+        tag: ${{ VERSION }}
         # bodyFile: "body.md"
         # token
