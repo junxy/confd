@@ -18,8 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # ref: https://endoflife.date/go
+        go-version: [ '1.21', '1.22' ]
         # build and publish in parallel: linux/386, linux/amd64, linux/arm64, windows/386, windows/amd64, darwin/amd64, darwin/arm64
-        go-version: [ '1.19', '1.20', '1.21.x' ]
         goos: [linux, windows, darwin]
         goarch: ["386", amd64, arm64]
         exclude:
@@ -29,7 +30,10 @@ jobs:
             goos: windows
     steps:
     - uses: actions/checkout@v4
-    
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
     # - uses: wangyoucao577/go-release-action@v1
     #   with:
     #     github_token: ${{ secrets.GITHUB_TOKEN }}
