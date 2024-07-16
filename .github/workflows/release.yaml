@@ -48,6 +48,12 @@ jobs:
         -buildvcs=false \
         -ldflags="-s -w -X main.GitSHA=${GIT_SHA}" \
         -o bin/confd-${VERSION}-$GOOS-$GOARCH$extension;
+
+    - name: run upx
+      run: |
+        sudo apt update
+        sudo apt install -y upx
+        upx bin/confd-${VERSION}-*
         
     # - uses: wangyoucao577/go-release-action@v1
     #   with:
@@ -64,7 +70,6 @@ jobs:
     - name: artifact
       uses: actions/upload-artifact@v4
       with:
-        name: rel-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.go-version }}
+        name: confd-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.go-version }}
         path: |
           bin
-          !rel
