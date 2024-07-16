@@ -36,7 +36,9 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - run: |
         go version
-        
+
+        # ref: https://github.com/marketplace/actions/install-package
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/customizing-github-hosted-runners
         sudo apt update
         sudo apt install -y upx
         
@@ -47,7 +49,8 @@ jobs:
         export CGO_ENABLED=0
         if [ $GOOS == windows ]; then export extension=.exe; fi;
 
-        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+        # ref: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable 
+        # echo "VERSION=$VERSION" >> "$GITHUB_ENV"
         
         go build \
         -buildvcs=false \
@@ -68,7 +71,9 @@ jobs:
     #     release_asset_dir: rel
     #     compress_assets: OFF
 
-    # ref: https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
+    # ref: https://docs.github.com/en/actions/learn-github-actions/essential-features-of-github-actions
+
+    # ref: https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs !
     - name: produce-artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -93,9 +98,10 @@ jobs:
         path: bin
         merge-multiple: true
     # ref: https://github.com/ncipollo/release-action
+    # https://github.com/marketplace/actions/create-release
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "bin"
+        artifacts: "bin/*"
         tag: dev
         # bodyFile: "body.md"
         # token
