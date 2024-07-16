@@ -72,3 +72,9 @@ jobs:
         name: confd-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.go-version }}
         path: |
           bin
+
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "confd-*"
+        # bodyFile: "body.md"
+        # token
