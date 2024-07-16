@@ -37,6 +37,9 @@ jobs:
     - run: |
         go version
         
+        sudo apt update
+        sudo apt install -y upx
+        
         export VERSION=`egrep -o '[0-9]+\.[0-9a-z.\-]+' version.go`
         export GIT_SHA=`git rev-parse --short HEAD || echo`
         export GOOS=${{ matrix.goos }}
@@ -49,10 +52,6 @@ jobs:
         -ldflags="-s -w -X main.GitSHA=${GIT_SHA}" \
         -o bin/confd-${VERSION}-$GOOS-$GOARCH$extension;
 
-    - name: run upx
-      run: |
-        sudo apt update
-        sudo apt install -y upx
         upx bin/confd-${VERSION}-*
         
     # - uses: wangyoucao577/go-release-action@v1
